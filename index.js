@@ -71,6 +71,22 @@ app.get('/api/channel/:id', async (req, res) => {
 	}
 });
 
+// Skapa meddelande i broadcast-kanalen
+app.post('/api/broadcast', async (req, res) => {
+	try {
+		const channel = await Channel.findOne('Broadcast') // Letar efter kanalen Broadcast och om den hittar den, spara objektet i channel
+		if (!channel) {
+			res.json({ error: 'Broadcast channel not found'}).status(404)
+		}
+		else {
+			const message = await Message.create({ channelName: channel._id, sender: 'Anonymous', ...req.body }) // Skapa ett meddelande i Broadcast-kanalen med anonym avsändare, skicka vidare meddelandet från body
+			res.json(message).status(201)
+		}
+	}
+	catch (error) {
+		res.json({ error: error.message}).status(500)
+	}
+});
 
 // Connect to MongoDB database using Mongoose ODM (Object Data Modeling) library for MongoDB and Node.js
 mongoose.connect(connectString)

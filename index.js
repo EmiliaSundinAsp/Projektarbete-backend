@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Channel = require('./models/channel.model');
+const Message = require('./models/message.model');
 
 const connectString = 'mongodb+srv://emiliasundinasp:fågel-fisk-mittimellan@backend-chat-app.mkvm9ci.mongodb.net/chat-api?retryWrites=true&w=majority';
 
@@ -10,6 +11,66 @@ app.use(express.json()); // Middleware för att tillåta json i express
 app.get('/', function (req, res) {
 	res.send('Hello World')
 })
+
+// Hämtar alla kanaler
+app.get('/api/channel/', async (req, res) => {
+	try {
+		const channels = await Channel.find({});
+		res.json(channels);
+	}
+	catch (error) {
+		res.json({ error: error.message});
+	}
+});
+
+// Skapar en ny kanal
+app.put('/api/channel/', async (req, res) => {
+	const { channelName } = req.body; // Hämta channelName från body-objektet till en variabel
+	try {
+		const channel = await Channel.create({ channelName: channelName});
+		res.json(channel);
+	}
+	catch (error) {
+		res.json({ error: error.message});
+	}
+});
+
+// Skapa meddelande i en befintlig kanal
+app.post('/api/channel/:id', async (req, res) => {
+	const id = req.params.id;
+	try {
+		const channel = await Channel.findById(id)
+		if (!channel) {
+			res.json({ error: 'Channel not found'}).status(404)
+		}
+		else {
+			const message = await Message.create({ channelName: id, ...req.body }) // ... kopierar ett objekt och skickar det vidare (spread operator)
+			res.json(message).status(201)
+		}
+	}
+	catch (error) {
+		res.json({ error: error.message}).status(500)
+	}
+});
+
+// Hämta alla meddelanden i en befintlig kanal
+app.get('/api/channel/:id', async (req, res) => {
+	const id = req.params.id;
+	try {
+		const channel = await Channel.findById(id) // Sök efter kanalens id
+		if (!channel) { // Om kanalen ej finns
+			res.json({ error: 'Channel not found'}).status(404) // Skicka felmeddelande
+		}
+		else {
+			const messages = await Message.find({ channelName: id }) // Hämtar alla meddelanden i kanalen :id
+			res.json(messages).status(200)
+		}
+	}
+	catch (error) {
+		res.json({ error: error.message}).status(500)
+	}
+});
+
 
 // Connect to MongoDB database using Mongoose ODM (Object Data Modeling) library for MongoDB and Node.js
 mongoose.connect(connectString)

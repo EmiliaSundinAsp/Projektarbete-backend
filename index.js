@@ -74,13 +74,30 @@ app.get('/api/channel/:id', async (req, res) => {
 // Skapa meddelande i broadcast-kanalen
 app.post('/api/broadcast', async (req, res) => {
 	try {
-		const channel = await Channel.findOne('Broadcast') // Letar efter kanalen Broadcast och om den hittar den, spara objektet i channel
+		const channel = await Channel.findOne({ channelName: 'Broadcast'}) // Letar efter kanalen Broadcast och om den hittar den, spara objektet i channel
 		if (!channel) {
 			res.json({ error: 'Broadcast channel not found'}).status(404)
 		}
 		else {
 			const message = await Message.create({ channelName: channel._id, sender: 'Anonymous', ...req.body }) // Skapa ett meddelande i Broadcast-kanalen med anonym avsändare, skicka vidare meddelandet från body
 			res.json(message).status(201)
+		}
+	}
+	catch (error) {
+		res.json({ error: error.message}).status(500)
+	}
+});
+
+// Hämta alla meddelanden i Broadcast-kanalen
+app.get('/api/broadcast', async (req, res) => {
+	try {
+		const channel = await Channel.findOne({ channelName: 'Broadcast'}) // Letar efter kanalen Broadcast och om den hittar den, spara objektet i channel
+		if (!channel) { // Om kanalen ej finns
+			res.json({ error: 'Broadcast channel not found'}).status(404) // Skicka felmeddelande
+		}
+		else {
+			const messages = await Message.find({ channelName: channel._id }) // Hämtar alla meddelanden
+			res.json(messages).status(200)
 		}
 	}
 	catch (error) {

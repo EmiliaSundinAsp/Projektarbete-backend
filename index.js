@@ -105,12 +105,12 @@ app.get('/api/broadcast', async (req, res) => {
 	}
 });
 
-// Connect to MongoDB database using Mongoose ODM (Object Data Modeling) library for MongoDB and Node.js
+// Anslut till MongoDB databas med Mongoose ODM (Object Data Modeling) bibliotek för MongoDB and Node.js
 mongoose.connect(connectString)
 	.then(() => {
-		// Connection successful
+		// Lyckad anslutning
 		console.log('Connected to database!')
-		// Start server on port 3000 after successful connection to database
+		// Starta server på port 3000 efter lyckad anslutning till databas
 		app.listen(3000, () => {
 			serverStart();
 			console.log('Server is running on port 3000!');
